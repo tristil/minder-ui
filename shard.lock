@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  termbox:
+    github: andrewsuzuki/termbox-crystal
+    commit: 1f967fc89ec43796e399ebe2416793d41a1464e3
+
