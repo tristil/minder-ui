@@ -2,70 +2,54 @@ require "../libs/termbox"
 
 module Minder
   class Application
-    include Termbox
+    getter :logger
 
     def run
-      # Instantiate new termbox window
-      w = Window.new
+      Minder.logger.warn "Start"
 
-      frame = Minder::Frame.new(window: w)
+      window = Termbox::Window.new
 
-      # Use 256 color mode
-      w.set_output_mode(OUTPUT_256)
+      scene = Scene.new(window)
+
+      pomodoro_frame = Minder::PomodoroFrame.new(
+        window: window,
+        height: 5)
+      scene << pomodoro_frame
+
+      tasks_frame = Minder::TasksFrame.new(
+        window: window,
+        display_mode: DisplayMode::Expands)
+      scene << tasks_frame
+
+      quick_add_frame = Minder::QuickAddFrame.new(
+        window: window,
+        height: 3)
+      scene << quick_add_frame
+
       # Reset things
-      w.clear
+      window.clear
 
-      # Write a string
-      w.write_string(Position.new(3, 3), "this is a test of write line")
+      scene.draw
 
-      # Write a string that goes "off the screen"
-      startat2 = Position.new(w.width - "this goes off the".size, w.height - 1)
-      w.write_string(startat2, "this goes off the page")
+      loop do
+        ev = window.peek(1)
+        if ev.type == Termbox::EVENT_KEY
+          if [Termbox::KEY_CTRL_C, Termbox::KEY_CTRL_D].includes? ev.key
+            break
+          end
+        elsif ev.type == Termbox::EVENT_RESIZE
+          Minder.logger.warn "repaint_all"
+          scene.repaint_all
+        end
 
-      # Place the cursor at 3, 3
-      w.cursor(Position.new(3, 3))
+        scene.draw
 
-      # Draw vertical line on left margin
-      w << Line.new(Cell.new('|', Position.new(1, 1)), 15, true)
-
-      # Draw box
-      w << Border.new(Position.new(4, 4), 15, 6, '-')
-
-      # Draw double box
-      w << Border.new(Position.new(20, 4), 15, 6, "double")
-
-      # Draw dotted box with solid box over it
-      w << Border.new(Position.new(36, 4), 15, 6, "dotted")
-      w << Border.new(Position.new(38, 5), 15, 6, "solid")
-
-      # Draw custom border (at-signs) on the border of a container
-
-      contain = Container.new(Position.new(54, 4), 15, 6)
-      contain << Border.new(contain, '@')
-      contain << Cell.new('A', Position.new(2, 2), 231, 82)
-      w << contain
-
-      # Render the screen
-      w.render
-
-      # So we can see things for a bit
-      sleep(1)
-
-      # Write 0 - 9 again on 6th row, clearing 5th row as we go
-      (0..9).each do |i|
-        w << Cell.new(i.to_s.char_at(0), Position.new(5 + i, 6), 56, 190)
-        w.clear_cell(Position.new(5 + i, 5))
-        # Put cursor after this cell
-        w.cursor(Position.new(6 + i, 6))
-        sleep(0.1)
-        w.render
+        sleep(0.01)
       end
 
-      sleep(2)
-
-      # Essential to call shutdown to reset lower-level
-      # terminal flags
-      w.shutdown
+      at_exit do
+        window.shutdown
+      end
     end
   end
 end
