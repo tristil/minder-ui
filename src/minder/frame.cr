@@ -23,7 +23,8 @@ module Minder
                    @width = 40,
                    @top = 0,
                    @left = 0,
-                   @display_mode = DisplayMode::Fixed)
+                   @display_mode = DisplayMode::Fixed,
+                   @collection = nil)
       @focused = false
       @hidden = false
       @has_cursor = false
@@ -68,7 +69,7 @@ module Minder
     end
 
     def clear
-      Minder.logger.debug "clear"
+      # Minder.logger.debug "clear"
       (1...height).each do |y|
         (1...width).each do |x|
           existing_cell = container.elements.find do |element|
@@ -84,7 +85,7 @@ module Minder
             # end
 
             if y >= height - 1 || x >= width - 1
-              Minder.logger.debug "Removing #{existing_cell}"
+              # Minder.logger.debug "Removing #{existing_cell}"
               container.elements.reject! { |element| element == existing_cell }
             else
               (existing_cell as Termbox::Cell).char = ' ' # self.class.name[-7]
@@ -119,9 +120,9 @@ module Minder
 
     def write_lines(lines)
       @lines = lines
-      Minder.logger.debug "(#{self.class.name}) #{lines.inspect}"
+      # Minder.logger.debug "(#{self.class.name}) #{lines.inspect}"
       lines.each_with_index do |line, index|
-        Minder.logger.debug "(#{self.class.name}) line: #{index}"
+        # Minder.logger.debug "(#{self.class.name}) line: #{index}"
         write_string(Termbox::Position.new(0, index), line)
       end
     end
@@ -134,7 +135,7 @@ module Minder
           Termbox::Position.new(x + 1, y + 1)
         )
         if x == 0
-          Minder.logger.debug "(#{self.class.name}) #{cell.position}"
+          # Minder.logger.debug "(#{self.class.name}) #{cell.position}"
         end
 
         container << cell
