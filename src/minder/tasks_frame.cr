@@ -5,9 +5,37 @@ module Minder
     getter :current_line,
            :task_editor
 
+    def initialize(@window = null,
+                   @height = 3,
+                   @width = 40,
+                   @top = 0,
+                   @left = 0,
+                   @display_mode = DisplayMode::Fixed,
+                   @collection = nil)
+      super
+    end
+
     def contents
-      ["What are you working on?",
-        "Press (e) to open editor."]
+      if @minimized
+        minimized_message
+      elsif (@collection as TasksCollection).empty?
+        empty_text
+      else
+        tasks_text
+      end
+    end
+
+    def tasks_text
+      header_text +
+        (@collection as TasksCollection).tasks.map do |task|
+          task = task as Hash(String, JSON::Type)
+          description = task["description"] as String
+          "-[ ] #{description}"
+        end
+    end
+
+    def empty_text
+      ["Add a task by tabbing to Quick add task below."]
     end
 
     def minimize
@@ -27,62 +55,13 @@ module Minder
       @editing
     end
 
-    def template
-      if minimized?
-        minimized_message
-      elsif task_manager.tasks?
-        doing_message
-      else
-        prompt_message
-      end
-    end
-
     def minimized_message
-<<-TEXT
-Space to see tasks
-TEXT
-    end
-
-    def prompt_message
-      <<-TEXT
-What are you working on?
-
-Press (e) to open editor.
-TEXT
+      ["Space to see tasks"]
     end
 
     def header_text
-<<-TEXT
-Tasks         ? to see commands
-
-TEXT
-    end
-
-    def tasks_text
-      text = ""
-      task_manager.tasks.each do |task|
-         if task.started?
-          text += "-[*] #{task}\n"
-        else
-          text += "-[ ] #{task}\n"
-        end
-      end
-      text
-    end
-
-    def tasks_text_lines
-      tasks_text.split("\n")
-    end
-
-    def header_text_lines
-      header_text.split("\n")
-    end
-
-    def desired_height
-      return 3 if minimized?
-
-      # TODO: figure out what this magic 3 number is
-      header_text_lines.length + tasks_text_lines.length + 3
+      ["Tasks         ? to see commands",
+       ""]
     end
 
     def allocated_tasks_height
@@ -95,11 +74,6 @@ TEXT
 
     def visible_tasks_range
       (scroll_offset..(allocated_tasks_height + scroll_offset - 1))
-    end
-
-    def doing_message
-      header_text +
-        offset_tasks_text
     end
 
     def set_cursor_position
