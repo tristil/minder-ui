@@ -2,6 +2,8 @@ require "../libs/termbox"
 
 module Minder
   class Frame
+    property :focused
+
     getter :window,
            :min_height,
            :height,
@@ -10,13 +12,18 @@ module Minder
            :top,
            :lines,
            :container,
+           :buffer,
            :changed,
            :display_mode
 
     delegate "pivot=", @container
     delegate "fixed?", "expands?", @display_mode
 
+    @cursor_x :: Int32
+    @cursor_y :: Int32
+
     @container :: Termbox::Container
+    @cursor :: Cursor
 
     def initialize(@window = null,
                    @height = 3,
@@ -25,11 +32,16 @@ module Minder
                    @left = 0,
                    @display_mode = DisplayMode::Fixed,
                    @collection = nil)
+      @cursor_x = 1
+      @cursor_y = 1
       @focused = false
       @hidden = false
       @has_cursor = false
       @changed :: Bool
       @changed = true
+      @cursor = Cursor.new(@cursor_x, @cursor_y)
+
+      @buffer = Buffer.new(@width, @height)
 
       @container = Termbox::Container.new(
         Termbox::Position.new(0, top),
@@ -40,6 +52,9 @@ module Minder
 
       @lines = [] of String
       @min_height = height
+    end
+
+    def handle_key(key)
     end
 
     def contents
@@ -65,7 +80,16 @@ module Minder
 
       write_lines(contents)
 
+      position_cursor if @focused
+
+      @buffer.apply(@container)
+
       @changed = false
+    end
+
+    def position_cursor
+      @cursor.position = Termbox::Position.new(@cursor_x, @cursor_y)
+      @container << @cursor
     end
 
     def clear

@@ -11,7 +11,7 @@ module Minder
 
     def <<(frame)
       @frames << frame
-      @window << frame.container
+      @window << frame.buffer
     end
 
     def repaint_all
@@ -27,6 +27,21 @@ module Minder
 
     def fixed_frames
       @frames.select(&.fixed?)
+    end
+
+    def focus_frame(frame)
+      puts frame
+      @frames.each do |search_frame|
+        if search_frame == frame
+          search_frame.focused = true
+        else
+          search_frame.focused = false
+        end
+      end
+    end
+
+    def focused_frame
+      @frames.find(&.focused) || raise "No frame focused"
     end
 
     def fixed_frames_height

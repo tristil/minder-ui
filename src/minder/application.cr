@@ -32,6 +32,8 @@ module Minder
       scene << quick_add_frame
       # Reset things
       window.clear
+
+      scene.focus_frame(tasks_frame)
       scene.draw
 
       loop do
@@ -40,8 +42,9 @@ module Minder
           if [Termbox::KEY_CTRL_C, Termbox::KEY_CTRL_D].includes? ev.key
             break
           end
+
+          scene.focused_frame.handle_key(ev)
         elsif ev.type == Termbox::EVENT_RESIZE
-          #Minder.logger.warn "repaint_all"
           scene.repaint_all
         end
 
