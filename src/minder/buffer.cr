@@ -1,9 +1,17 @@
+# Allows creating a coordinate plane of cells, which can then be layered and #
+# sent to termbox. This depends on termbox using the last cell for a given
+# position, so that layers added later take precedence over initial layers.
+#
 module Minder
   alias Row = Array(Termbox::Cell)
+  alias Matrix = Array(Row)
 
   class Layer
-    def initialize(width, height)
-      @matrix = Array(Row).new(height)
+    getter :height,
+           :width
+
+    def initialize(@width : Int32, @height : Int32)
+      @matrix = Matrix.new(height)
       height.times do |y|
         @matrix << Row.new(width)
         width.times do |x|
@@ -12,14 +20,24 @@ module Minder
       end
     end
 
-    def set(x, y, cell)
-      #Minder.logger.warn @matrix
-      #Minder.logger.warn cell
-      @matrix[y][x] = cell if @matrix[y]? && @matrix[y][x]?
+    def initialize(matrix : Matrix)
+      @matrix = matrix
+      @width = matrix[0].size
+      @height = matrix.size
     end
 
-    def fill(cell, top, left, height, width)
-      @matrix
+    def new_transform(x, y)
+      matrix = @matrix.clone
+      height.times do |y|
+        width.times do |x|
+          matrix[y][x] = matrix[y][x].new_transform(x, y)
+        end
+      end
+      self.class.new(matrix)
+    end
+
+    def set(x, y, cell)
+      @matrix[y][x] = cell if @matrix[y]? && @matrix[y][x]?
     end
 
     def render
@@ -28,11 +46,12 @@ module Minder
   end
 
   class Buffer < Termbox::Element
-    def initialize(width, height)
+    def initialize(width, height, pivot)
       @width = width
       @height = height
-      @layers = [] of Layer
-      @layers << Layer.new(width, height)
+      @layers = [] of (Layer|Termbox::Element)
+      @layers << Layer.new(width, height).new_transform(pivot.x, pivot.y)
+      @pivot = pivot
     end
 
     def render
@@ -42,11 +61,7 @@ module Minder
     end
 
     def apply(element)
-      layer = Layer.new(@width, @height)
-      element.render.each do |cell|
-        layer.set(cell.position.x, cell.position.y, cell)
-      end
-      @layers << layer
+      @layers << element
     end
   end
 end

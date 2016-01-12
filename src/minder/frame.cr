@@ -41,7 +41,9 @@ module Minder
       @changed = true
       @cursor = Cursor.new(@cursor_x, @cursor_y)
 
-      @buffer = Buffer.new(@width, @height)
+      pivot = Termbox::Position.new(0, top)
+
+      @buffer = Buffer.new(@width, @height, pivot)
 
       @container = Termbox::Container.new(
         Termbox::Position.new(0, top),
@@ -76,7 +78,7 @@ module Minder
         self.height = contents.size + 2
       end
 
-      clear
+      #clear
 
       write_lines(contents)
 
