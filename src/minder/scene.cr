@@ -30,7 +30,6 @@ module Minder
     end
 
     def focus_frame(frame)
-      puts frame
       @frames.each do |search_frame|
         if search_frame == frame
           search_frame.focused = true
