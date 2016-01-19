@@ -20,7 +20,7 @@ module Minder
     end
 
     def draw
-      resize
+      resize if window_height_changed?
       @frames.each(&.render)
       window.render
     end
@@ -48,23 +48,32 @@ module Minder
       fixed_frames.sum(&.height)
     end
 
+    def window_height_changed?
+      @old_window_height != window.height
+    end
+
     def changed?
       @frames.any?(&.changed?)
     end
 
     def resize
-      #Minder.logger.warn "resize"
       line = 0
       @frames.each do |frame|
         frame.pivot = Termbox::Position.new(0, line)
         frame.width = window.width
         if frame.expands?
-          frame.pivot = Termbox::Position.new(0, line)
           frame.height = window.height - fixed_frames_height
         end
-        #Minder.logger.warn "resize #{frame.class.name} height: #{frame.height}, line: #{line}"
+        Minder.logger.warn "
+          total height: #{window.height}
+          fixed frames height: #{fixed_frames_height}
+          resize #{frame.class.name}
+          height: #{frame.height}
+          line: #{line}"
         line += frame.height
+        frame.resize
       end
+      @old_window_height = window.height
     end
   end
 end

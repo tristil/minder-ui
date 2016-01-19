@@ -60,6 +60,10 @@ module Minder
     def handle_key(key)
     end
 
+    def resize
+      @buffer.resize(@width, @height)
+    end
+
     def contents
       [] of String
     end
@@ -79,12 +83,11 @@ module Minder
         self.height = contents.size + 2
       end
 
-      #clear
-
       write_lines(contents)
 
       position_cursor if @focused
 
+      @buffer.pop unless @buffer.layers.size == 1
       @buffer.apply(@container)
 
       @buffer.print_to_file
@@ -94,38 +97,6 @@ module Minder
     def position_cursor
       @cursor.position = Termbox::Position.new(@cursor_x, @cursor_y)
       @container << @cursor
-    end
-
-    def clear
-      # Minder.logger.debug "clear"
-      (1...height).each do |y|
-        (1...width).each do |x|
-          existing_cell = container.elements.find do |element|
-            next unless element.is_a?(Termbox::Cell)
-
-            element.position.x == x && element.position.y == y
-          end
-
-          if existing_cell
-            existing_cell = existing_cell as Termbox::Cell
-            # if x == 1
-              # Minder.logger.debug "height: #{height} y: #{existing_cell.position.y}"
-            # end
-
-            if y >= height - 1 || x >= width - 1
-              # Minder.logger.debug "Removing #{existing_cell}"
-              container.elements.reject! { |element| element == existing_cell }
-            else
-              (existing_cell as Termbox::Cell).char = ' ' # self.class.name[-7]
-            end
-          else
-            unless y >= height - 1 || x >= width - 1
-              new_cell = Termbox::Cell.new(' ', Termbox::Position.new(x, y))
-              container.elements << new_cell
-            end
-          end
-        end
-      end
     end
 
     def width=(number)
@@ -148,9 +119,7 @@ module Minder
 
     def write_lines(lines)
       @lines = lines
-      # Minder.logger.debug "(#{self.class.name}) #{lines.inspect}"
       lines.each_with_index do |line, index|
-        # Minder.logger.debug "(#{self.class.name}) line: #{index}"
         write_string(Termbox::Position.new(0, index), line)
       end
     end
@@ -162,10 +131,6 @@ module Minder
           char,
           Termbox::Position.new(x + 1, y + 1)
         )
-        if x == 0
-          # Minder.logger.debug "(#{self.class.name}) #{cell.position}"
-        end
-
         container << cell
         x += 1
       end

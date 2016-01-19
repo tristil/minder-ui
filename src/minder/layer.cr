@@ -1,5 +1,7 @@
 module Minder
   class Layer
+    @@id = 0
+
     getter :height,
            :width,
            :grid,
@@ -11,19 +13,21 @@ module Minder
       layer = new(element.width, element.height)
         .new_transform(element.pivot.x, element.pivot.y)
       element.render.each do |cell|
-        next unless layer.grid[cell.position.y]?
-        next unless layer.grid[cell.position.y][cell.position.x]?
-        layer.grid[cell.position.y][cell.position.x] = cell
+        adjusted_y = cell.position.y - element.pivot.y
+        adjusted_x = cell.position.x - element.pivot.x
+        layer.grid[adjusted_y][adjusted_x] = cell
       end
       layer
     end
 
     def initialize(@width : Int32, @height : Int32)
+      @@id +=1
       @grid = Grid.new(@height)
       build_matrix
     end
 
     def initialize(matrix : Grid)
+      @@id +=1
       @grid = matrix
       @width = matrix[0].size
       @height = matrix.size
@@ -40,7 +44,7 @@ module Minder
     end
 
     def set(x, y, cell)
-      @grid[y][x] = cell if @grid[y]? && @grid[y][x]?
+      @grid[y][x] = cell
     end
 
     def render
@@ -51,7 +55,8 @@ module Minder
       height.times do |y|
         @grid << Row.new(width)
         width.times do |x|
-          @grid[y] << Termbox::Cell.new(' ', Termbox::Position.new(x, y))
+          @grid[y] << Termbox::Cell.new(@@id.to_s[0], Termbox::Position.new(x, y))
+          #@grid[y] << Termbox::Cell.new(' ', Termbox::Position.new(x, y))
         end
       end
     end
