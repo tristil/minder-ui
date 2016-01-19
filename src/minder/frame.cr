@@ -1,3 +1,4 @@
+require "./cursor"
 require "../libs/termbox"
 
 module Minder
@@ -43,7 +44,7 @@ module Minder
 
       pivot = Termbox::Position.new(0, top)
 
-      @buffer = Buffer.new(@width, @height, pivot)
+      @buffer = Buffer.new(@width, @height, pivot, (self as Frame))
 
       @container = Termbox::Container.new(
         Termbox::Position.new(0, top),
@@ -86,6 +87,7 @@ module Minder
 
       @buffer.apply(@container)
 
+      @buffer.print_to_file
       @changed = false
     end
 

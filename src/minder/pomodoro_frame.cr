@@ -68,10 +68,6 @@ TEXT
       notify_observers(event)
     end
 
-    def set_cursor_position
-      window.setpos(1, lines[0].strip.length + 2)
-    end
-
     def pomodoros
       pomodoro_runner.pomodoros_today.map do |pomodoro|
         "#{pomodoro_runner.emoji} "

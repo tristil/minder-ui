@@ -47,6 +47,7 @@ module Minder
     def task_row(task)
       task = task as Hash(String, JSON::Type)
       description = task["description"] as String
+      description = description[0..(width - 8)]
       "-[ ] #{description}"
     end
 

@@ -1,7 +1,10 @@
 require "logger"
-require "./minder/*"
+require "../libs/termbox"
 
 module Minder
+  alias Row = Array(Termbox::Cell)
+  alias Grid = Array(Row)
+
   enum DisplayMode
     Fixed
     Expands
@@ -17,3 +20,5 @@ module Minder
     @@logger
   end
 end
+
+require "./minder/*"

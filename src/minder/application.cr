@@ -1,4 +1,3 @@
-require "../libs/termbox"
 require "socket"
 require "json"
 
