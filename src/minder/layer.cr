@@ -10,20 +10,20 @@ module Minder
     @grid :: Grid
 
     def self.build_from_element(element)
-      layer = new(element.width, element.height)
-        .new_transform(element.pivot.x, element.pivot.y)
+      layer = new(element.width, element.height, element.pivot)
       element.render.each do |cell|
         adjusted_y = cell.position.y - element.pivot.y
         adjusted_x = cell.position.x - element.pivot.x
+        Minder.logger.debug("[#{@@id}] #{adjusted_y}, #{adjusted_x}: #{cell.char}")
         layer.grid[adjusted_y][adjusted_x] = cell
       end
       layer
     end
 
-    def initialize(@width : Int32, @height : Int32)
+    def initialize(@width : Int32, @height : Int32, pivot = nil)
       @@id +=1
       @grid = Grid.new(@height)
-      build_matrix
+      build_matrix(pivot)
     end
 
     def initialize(matrix : Grid)
@@ -31,16 +31,6 @@ module Minder
       @grid = matrix
       @width = matrix[0].size
       @height = matrix.size
-    end
-
-    def new_transform(x, y)
-      matrix = @grid.clone
-      height.times do |y|
-        width.times do |x|
-          matrix[y][x] = matrix[y][x].new_transform(x, y)
-        end
-      end
-      self.class.new(matrix)
     end
 
     def set(x, y, cell)
@@ -51,12 +41,13 @@ module Minder
       @grid.flatten
     end
 
-    def build_matrix
+    def build_matrix(pivot = nil)
+      pivot ||= Termbox::Position.new(0, 0)
       height.times do |y|
         @grid << Row.new(width)
         width.times do |x|
-          @grid[y] << Termbox::Cell.new(@@id.to_s[0], Termbox::Position.new(x, y))
-          #@grid[y] << Termbox::Cell.new(' ', Termbox::Position.new(x, y))
+          position = Termbox::Position.new(x + pivot.x , y + pivot.y)
+          @grid[y] << Termbox::Cell.new(' ', position)
         end
       end
     end

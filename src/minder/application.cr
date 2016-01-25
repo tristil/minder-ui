@@ -18,16 +18,21 @@ module Minder
       scene = Scene.new(window)
       pomodoro_frame = PomodoroFrame.new(
         window: window,
-        height: 5)
+        height: 5,
+        top: 0,
+        width: window.width)
       scene << pomodoro_frame
       tasks_frame = TasksFrame.new(
         window: window,
+        width: window.width,
+        top: 5,
         collection: tasks_collection,
         display_mode: DisplayMode::Expands)
       scene << tasks_frame
       quick_add_frame = QuickAddFrame.new(
         window: window,
-        height: 3)
+        height: 3,
+        width: window.width)
       scene << quick_add_frame
       # Reset things
       window.clear

@@ -48,7 +48,7 @@ module Minder
 
       @container = Termbox::Container.new(
         Termbox::Position.new(0, top),
-        window.width,
+        width,
         height)
       @border = Termbox::Border.new(container)
       @container << @border
@@ -58,6 +58,11 @@ module Minder
     end
 
     def handle_key(key)
+    end
+
+    def pivot=(pivot)
+      @container.pivot = pivot
+      @buffer.pivot = pivot
     end
 
     def resize
@@ -103,6 +108,7 @@ module Minder
       return if number == @width
 
       @changed = true
+      @buffer.width = number
       @container.width = number
       @border.width = number
       @width = number
@@ -114,6 +120,7 @@ module Minder
       @changed = true
       @height = number
       container.height = number
+      @buffer.height = number
       @border.height = number
     end
 

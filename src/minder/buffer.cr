@@ -6,13 +6,15 @@ require "./frame"
 #
 module Minder
   class Buffer < Termbox::Element
+    property :height, :width, :pivot
+
     getter :layers
 
     @frame :: Frame
 
     def initialize(@width, @height, @pivot, @frame : Frame)
       @layers = [] of Layer
-      @layers << Layer.new(width, height).new_transform(pivot.x, pivot.y)
+      @layers << Layer.new(width, height, pivot)
     end
 
     def render
@@ -21,17 +23,23 @@ module Minder
       @layers.each do |layer|
         layer.render.each do |cell|
           cells.reject! do |cell2|
-            cell.position.x == cell2.position.x &&
-              cell.position.y == cell2.position.y
+            (cell.position.x == cell2.position.x &&
+              cell.position.y == cell2.position.y) ||
+
+              (cell2.position.y > (@height + @pivot.y) ||
+                cell2.position.x > (@width + @pivot.x))
           end
           cells << cell
         end
       end
-      cells
+
+      cells.sort_by { |cell| [cell.position.y, cell.position.x] }
     end
 
     def resize(width, height)
-      @layers[0] = Layer.new(width, height).new_transform(@pivot.x, @pivot.y)
+      @width = width
+      @height = height
+      @layers[0] = Layer.new(width, height, pivot)
     end
 
     def apply(element)
@@ -52,6 +60,23 @@ module Minder
           row.map { |cell| cell.char }.join
         end.join("\n") + "\n"
       end
+
+      cells = render
+      string += "\nbuffer\n\n"
+      line = 0
+      cells.each do |cell|
+        if cell.position.y != line
+          line = cell.position.y
+          string += "\n"
+        else
+          if cell.char == ' '
+            string += ' '
+          else
+            string += cell.char
+          end
+        end
+      end
+
       File.write(
         "screens/#{@frame.class.name.underscore.downcase.gsub("minder::", "")}.txt",
         string)
