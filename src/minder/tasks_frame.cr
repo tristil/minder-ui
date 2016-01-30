@@ -125,7 +125,7 @@ module Minder
     end
 
     def handle_char_keypress(key_event)
-      Minder.logger.warn(key_event) unless key_event.ch == 0
+      Minder.debug("keypress: ch: #{key_event.ch}") unless key_event.ch == 0
       event =
         case key_event.ch
         when 'j' then :select_next_task
@@ -166,15 +166,14 @@ module Minder
       when :select_next_task
         @selected_task_index += 1
         move_cursor
-        @changed = true
       when :select_previous_task
         @selected_task_index -= 1 unless @selected_task_index == 0
         move_cursor
-        @changed = true
       end
     end
 
     def move_cursor
+      @cursor_moved = true
       @cursor_y = 3 + @selected_task_index
     end
   end

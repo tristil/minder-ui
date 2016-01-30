@@ -14,7 +14,6 @@ module Minder
       element.render.each do |cell|
         adjusted_y = cell.position.y - element.pivot.y
         adjusted_x = cell.position.x - element.pivot.x
-        Minder.logger.debug("[#{@@id}] #{adjusted_y}, #{adjusted_x}: #{cell.char}")
         layer.grid[adjusted_y][adjusted_x] = cell
       end
       layer

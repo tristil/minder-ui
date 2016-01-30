@@ -14,6 +14,7 @@ module Minder
            :lines,
            :container,
            :buffer,
+           :cursor_moved,
            :changed,
            :display_mode
 
@@ -24,7 +25,6 @@ module Minder
     @cursor_y :: Int32
 
     @container :: Termbox::Container
-    @cursor :: Cursor
 
     def initialize(@window = null,
                    @height = 3,
@@ -40,7 +40,7 @@ module Minder
       @has_cursor = false
       @changed :: Bool
       @changed = true
-      @cursor = Cursor.new(@cursor_x, @cursor_y)
+      @cursor_moved = true
 
       pivot = Termbox::Position.new(0, top)
 
@@ -81,6 +81,10 @@ module Minder
       @changed
     end
 
+    def cursor_moved?
+      @cursor_moved
+    end
+
     def render
       return unless @changed
 
@@ -90,18 +94,14 @@ module Minder
 
       write_lines(contents)
 
-      position_cursor if @focused
-
-      @buffer.pop unless @buffer.layers.size == 1
       @buffer.apply(@container)
 
-      @buffer.print_to_file
+      spawn { @buffer.print_to_file }
       @changed = false
     end
 
     def position_cursor
-      @cursor.position = Termbox::Position.new(@cursor_x, @cursor_y)
-      @container << @cursor
+      window.cursor(Termbox::Position.new(@cursor_x, @cursor_y + top))
     end
 
     def width=(number)

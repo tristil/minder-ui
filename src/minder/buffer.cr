@@ -24,13 +24,15 @@ module Minder
         layer.render.each do |cell|
           cells.reject! do |cell2|
             (cell.position.x == cell2.position.x &&
-              cell.position.y == cell2.position.y) ||
-
-              (cell2.position.y > (@height + @pivot.y) ||
-                cell2.position.x > (@width + @pivot.x))
+              cell.position.y == cell2.position.y)
           end
           cells << cell
         end
+      end
+
+      cells.reject! do |cell|
+        (cell.position.y > (@height + @pivot.y) ||
+         cell.position.x > (@width + @pivot.x))
       end
 
       cells.sort_by { |cell| [cell.position.y, cell.position.x] }

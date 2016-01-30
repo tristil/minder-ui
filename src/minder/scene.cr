@@ -20,8 +20,13 @@ module Minder
     end
 
     def draw
+      if focused_frame.cursor_moved?
+        focused_frame.position_cursor
+        window.render_raw
+      end
+
       return unless changed?
-      Minder.logger.debug("window_height_changed: #{window_height_changed?}")
+      Minder.debug("window_height_changed: #{window_height_changed?}")
       resize if window_height_changed?
       @frames.each(&.render)
       window.render
@@ -65,7 +70,7 @@ module Minder
         if frame.expands?
           frame.height = window.height - fixed_frames_height
         end
-        Minder.logger.warn "
+        Minder.debug "
           total height: #{window.height}
           fixed frames height: #{fixed_frames_height}
           resize #{frame.class.name}

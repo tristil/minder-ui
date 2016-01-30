@@ -16,8 +16,10 @@ module Minder
   @@logger = Logger.new(File.open(LOGGER_FILE, "a+"))
   @@logger.level = Logger::DEBUG
 
-  def self.logger
-    @@logger
+  def self.debug(string)
+    spawn do
+      @@logger.debug(string)
+    end
   end
 end
 

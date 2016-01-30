@@ -6,7 +6,7 @@ module Minder
     getter :logger
 
     def run
-      Minder.logger.warn "Start"
+      Minder.debug "Start"
 
       socket = UNIXSocket.new(SOCKET_LOCATION)
       socket.puts("tasks\n")
@@ -40,21 +40,28 @@ module Minder
       scene.focus_frame(tasks_frame)
       scene.draw
 
-      loop do
-        ev = window.peek(1)
-        if ev.type == Termbox::EVENT_KEY
-          if [Termbox::KEY_CTRL_C, Termbox::KEY_CTRL_D].includes? ev.key
-            break
+      spawn do
+        loop do
+          ev = window.poll
+          if ev.type == Termbox::EVENT_KEY
+            if [Termbox::KEY_CTRL_C, Termbox::KEY_CTRL_D].includes? ev.key
+              exit
+            end
+
+            #Minder.debug("Focused frame: #{scene.focused_frame.class.name}")
+            scene.focused_frame.handle_key(ev)
+            #Minder.debug("fiber loop: scene changed? #{scene.changed?}")
+          elsif ev.type == Termbox::EVENT_RESIZE
+            scene.repaint_all
           end
-
-          scene.focused_frame.handle_key(ev)
-        elsif ev.type == Termbox::EVENT_RESIZE
-          scene.repaint_all
+          sleep 0.001
         end
+      end
 
+      loop do
+        #Minder.debug("main loop: scene changed? #{scene.changed?}")
         scene.draw
-
-        sleep(0.01)
+        sleep(0.001)
       end
 
       at_exit do
