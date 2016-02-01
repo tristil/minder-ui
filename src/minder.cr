@@ -17,9 +17,7 @@ module Minder
   @@logger.level = Logger::DEBUG
 
   def self.debug(string)
-    spawn do
-      @@logger.debug(string)
-    end
+    spawn { @@logger.debug(string) }
   end
 end
 

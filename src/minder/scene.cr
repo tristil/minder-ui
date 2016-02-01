@@ -26,7 +26,7 @@ module Minder
       end
 
       return unless changed?
-      Minder.debug("window_height_changed: #{window_height_changed?}")
+      #Minder.debug("window_height_changed: #{window_height_changed?}")
       resize if window_height_changed?
       @frames.each(&.render)
       window.render

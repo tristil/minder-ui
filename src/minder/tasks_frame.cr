@@ -5,23 +5,26 @@ module Minder
     getter :selected_row,
            :task_editor
 
+    @collection : Minder::TasksCollection
+
     def initialize(@window = null,
                    @height = 3,
                    @width = 40,
                    @top = 0,
                    @left = 0,
                    @display_mode = DisplayMode::Fixed,
-                   @collection = nil)
+                   @collection = TasksCollection.new)
       super
       @cursor_x = 3
       @cursor_y = 3
-      @selected_task_index = 0
+      @keypress_memory = [] of Char
+      @scroll_offset = 0
     end
 
     def contents
       if @minimized
         minimized_message
-      elsif (@collection as TasksCollection).empty?
+      elsif @collection.empty?
         empty_text
       else
         tasks_text
@@ -37,7 +40,7 @@ module Minder
     end
 
     def tasks_to_display
-      (@collection as TasksCollection).tasks[0..tasks_height]
+      @collection.tasks[visible_tasks_range]
     end
 
     def task_rows
@@ -82,23 +85,21 @@ module Minder
     end
 
     def allocated_tasks_height
-      height - header_text_lines.length - 3
-    end
-
-    def offset_tasks_text
-      tasks_text_lines[visible_tasks_range].join("\n")
+      height - header_text.size - 3
     end
 
     def visible_tasks_range
-      (scroll_offset..(allocated_tasks_height + scroll_offset - 1))
-    end
-
-    def total_tasks_height
-      task_manager.tasks.length
+      (scroll_offset..(allocated_tasks_height + scroll_offset))
     end
 
     def scroll_offset
-      position = task_manager.selected_task_index + 1
+      if @collection.selected_task_index == @collection.size - 1
+        position = @collection.selected_task_index
+      elsif @collection.selected_task_index == @collection.size - 2
+        position = @collection.selected_task_index + 1
+      else
+        position = @collection.selected_task_index + 2
+      end
       if position > allocated_tasks_height
         position - allocated_tasks_height
       else
@@ -126,55 +127,55 @@ module Minder
 
     def handle_char_keypress(key_event)
       Minder.debug("keypress: ch: #{key_event.ch}") unless key_event.ch == 0
-      event =
-        case key_event.ch
-        when 'j' then :select_next_task
-        when 'k' then :select_previous_task
-        when 'd' then :complete_task
-        when 'x' then :delete_task
-        when 's' then :start_task
-        when 'u' then :unstart_task
-        when 'G' then :select_last_task
-        when 'e'
-          # @editing = true
-          # @task_editor = TaskEditor.new(task_manager.selected_task, self)
-          # @task_editor.add_observer(self, :handle_task_editor_event)
-          # :edit_task
-        when '?' then :help
-        when '/' then :search
-        when 'm'
-          # minimize
-          # :redraw
-        when 'n' then :next_search
-        when 'N' then :previous_search
-        when 'f' then :open_filter
-        when 'g'
-          # @keypress_memory ||= [] of Char
-          # @keypress_memory << 'g'
-          # if @keypress_memory == ['g', 'g']
-            # @keypress_memory = [] of Char
-            # :select_first_task
-          # end
-        when ' '
-          # if minimized?
-            # unminimize
-            # :redraw
-          # end
+      case key_event.ch
+      when 'j'
+        @collection.select_next_task
+        move_cursor
+      when 'k' then :select_previous_task
+        @collection.select_previous_task
+        move_cursor
+      when 'd' then :complete_task
+      when 'x' then :delete_task
+      when 's' then :start_task
+      when 'u' then :unstart_task
+      when 'G' then :select_last_task
+        @collection.select_last_task
+        move_cursor
+      when 'e'
+        # @editing = true
+        # @task_editor = TaskEditor.new(task_manager.selected_task, self)
+        # @task_editor.add_observer(self, :handle_task_editor_event)
+        # :edit_task
+      when '?' then :help
+      when '/' then :search
+      when 'm'
+        # minimize
+        # :redraw
+      when 'n' then :next_search
+      when 'N' then :previous_search
+      when 'f' then :open_filter
+      when 'g'
+        @keypress_memory << 'g'
+        if @keypress_memory == ['g', 'g']
+          @keypress_memory = [] of Char
+          @collection.select_first_task
+          move_cursor
         end
-
-      case event
-      when :select_next_task
-        @selected_task_index += 1
-        move_cursor
-      when :select_previous_task
-        @selected_task_index -= 1 unless @selected_task_index == 0
-        move_cursor
+      when ' '
+        # if minimized?
+          # unminimize
+          # :redraw
+        # end
       end
     end
 
     def move_cursor
       @cursor_moved = true
-      @cursor_y = 3 + @selected_task_index
+      @cursor_y = 3 + @collection.selected_task_index - scroll_offset
+      if @scroll_offset != scroll_offset
+        @changed = true
+        @scroll_offset = scroll_offset
+      end
     end
   end
 end

@@ -12,7 +12,7 @@ module Minder
       socket.puts("tasks\n")
       data = socket.gets("END\n").to_s.gsub("END\n", "")
       data = JSON.parse(data)
-      tasks_collection = TasksCollection.new(data)
+      tasks_collection = TasksCollection.new(data.as_a)
 
       window = Termbox::Window.new
       scene = Scene.new(window)
@@ -65,6 +65,7 @@ module Minder
       end
 
       at_exit do
+        window.clear
         socket.close
         window.shutdown
         puts "Shutdown"

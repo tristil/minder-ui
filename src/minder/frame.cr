@@ -32,7 +32,7 @@ module Minder
                    @top = 0,
                    @left = 0,
                    @display_mode = DisplayMode::Fixed,
-                   @collection = nil)
+                   @collection = TasksCollection.new)
       @cursor_x = 1
       @cursor_y = 1
       @focused = false
@@ -92,11 +92,15 @@ module Minder
         self.height = contents.size + 2
       end
 
+      @container.elements.reject! do |cell|
+        cell.is_a?(Termbox::Cell)
+      end
       write_lines(contents)
 
+      @buffer.pop unless @buffer.layers.size == 1
       @buffer.apply(@container)
 
-      spawn { @buffer.print_to_file }
+      Thread.new { @buffer.print_to_file }
       @changed = false
     end
 

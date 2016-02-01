@@ -14,28 +14,38 @@ module Minder
 
     def initialize(@width, @height, @pivot, @frame : Frame)
       @layers = [] of Layer
-      @layers << Layer.new(width, height, pivot)
+      base_layer = Layer.new(width, height, pivot, ' ')
+      @layers << base_layer
+      #@last_rendered = base_layer
+    end
+
+    def combined_layer
+      combined = Layer.new(width, height, pivot)
+      @layers.each_with_index do |layer, index|
+        Minder.debug("[#{@frame.class.name}] Layer #{index}: #{layer.object_id}")
+        layer.render.each do |cell|
+          combined.set(
+            cell.position.x - pivot.x,
+            cell.position.y - pivot.y,
+            cell)
+        end
+      end
+      combined
     end
 
     def render
-      cells = [] of Termbox::Cell
-      previous_layer = nil
-      @layers.each do |layer|
-        layer.render.each do |cell|
-          cells.reject! do |cell2|
-            (cell.position.x == cell2.position.x &&
-              cell.position.y == cell2.position.y)
-          end
-          cells << cell
-        end
-      end
+      combined_layer.render.reduce([] of Termbox::Cell) do |array, cell|
+        # previous_cell = @last_rendered.get(
+          # cell.position.x - pivot.x,
+          # cell.position.y - pivot.y)
 
-      cells.reject! do |cell|
-        (cell.position.y > (@height + @pivot.y) ||
-         cell.position.x > (@width + @pivot.x))
+        # if cell.char == previous_cell.char
+          # Minder.debug "#{cell.position} #{cell.char} == #{previous_cell.char}"
+          # next array
+        # end
+        array << cell
+        array
       end
-
-      cells.sort_by { |cell| [cell.position.y, cell.position.x] }
     end
 
     def resize(width, height)
@@ -46,6 +56,7 @@ module Minder
 
     def apply(element)
       layer = Layer.build_from_element(element)
+      Minder.debug("[#{@frame.class.name}] #{layer.object_id}")
       @layers << layer
     end
 
@@ -53,15 +64,22 @@ module Minder
       @layers.pop
     end
 
+    def output_layer(layer)
+      layer.grid.map do |row|
+        row.map { |cell| cell.char }.join
+      end.join("\n") + "\n"
+    end
+
     def print_to_file
       Dir.mkdir_p "screens"
       string = "#{@frame.class.name}\n"
       @layers.each_with_index do |layer, index|
         string += "layer ##{index}\n\n"
-        string +=layer.grid.map do |row|
-          row.map { |cell| cell.char }.join
-        end.join("\n") + "\n"
+        string += output_layer(layer)
       end
+
+      string += "Combined layer\n\n"
+      string += output_layer(combined_layer)
 
       cells = render
       string += "\nbuffer\n\n"
