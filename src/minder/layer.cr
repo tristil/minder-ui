@@ -22,7 +22,7 @@ module Minder
     def initialize(@width : Int32, @height : Int32, pivot = nil, fill_with = nil)
       @@id +=1
       @grid = Grid.new(@height)
-      Minder.debug("#{@@id}: #{@grid.object_id}")
+      # Minder.debug("#{@@id}: #{@grid.object_id}")
       build_matrix(pivot, fill_with)
     end
 

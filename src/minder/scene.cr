@@ -70,12 +70,12 @@ module Minder
         if frame.expands?
           frame.height = window.height - fixed_frames_height
         end
-        Minder.debug "
-          total height: #{window.height}
-          fixed frames height: #{fixed_frames_height}
-          resize #{frame.class.name}
-          height: #{frame.height}
-          line: #{line}"
+        # Minder.debug "
+          # total height: #{window.height}
+          # fixed frames height: #{fixed_frames_height}
+          # resize #{frame.class.name}
+          # height: #{frame.height}
+          # line: #{line}"
         line += frame.height
         frame.resize
       end

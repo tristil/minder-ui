@@ -1,4 +1,6 @@
 require "logger"
+require "./observer"
+require "./observable"
 require "../libs/termbox"
 
 module Minder
@@ -15,9 +17,10 @@ module Minder
 
   @@logger = Logger.new(File.open(LOGGER_FILE, "a+"))
   @@logger.level = Logger::DEBUG
+  @@logger_channel = Channel(String)
 
   def self.debug(string)
-    spawn { @@logger.debug(string) }
+    @@logger.debug(string)
   end
 end
 

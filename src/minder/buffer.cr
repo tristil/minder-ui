@@ -22,7 +22,7 @@ module Minder
     def combined_layer
       combined = Layer.new(width, height, pivot)
       @layers.each_with_index do |layer, index|
-        Minder.debug("[#{@frame.class.name}] Layer #{index}: #{layer.object_id}")
+        #Minder.debug("[#{@frame.class.name}] Layer #{index}: #{layer.object_id}")
         layer.render.each do |cell|
           combined.set(
             cell.position.x - pivot.x,
@@ -56,7 +56,7 @@ module Minder
 
     def apply(element)
       layer = Layer.build_from_element(element)
-      Minder.debug("[#{@frame.class.name}] #{layer.object_id}")
+      # Minder.debug("[#{@frame.class.name}] #{layer.object_id}")
       @layers << layer
     end
 

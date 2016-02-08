@@ -16,9 +16,9 @@ module Minder
                    @collection = TasksCollection.new)
       super
       @cursor_x = 3
-      @cursor_y = 3
       @keypress_memory = [] of Char
-      @scroll_offset = 0
+      @scroller = TasksScroller.new(@collection, (self as TasksFrame))
+      @cursor_y = @scroller.cursor_y + 3
     end
 
     def contents
@@ -39,12 +39,8 @@ module Minder
       @height - header_text.size - 3
     end
 
-    def tasks_to_display
-      @collection.tasks[visible_tasks_range]
-    end
-
     def task_rows
-      tasks_to_display.map { |task| task_row(task) }
+      @scroller.tasks.map { |task| task_row(task) }
     end
 
     def task_row(task)
@@ -88,25 +84,6 @@ module Minder
       height - header_text.size - 3
     end
 
-    def visible_tasks_range
-      (scroll_offset..(allocated_tasks_height + scroll_offset))
-    end
-
-    def scroll_offset
-      if @collection.selected_task_index == @collection.size - 1
-        position = @collection.selected_task_index
-      elsif @collection.selected_task_index == @collection.size - 2
-        position = @collection.selected_task_index + 1
-      else
-        position = @collection.selected_task_index + 2
-      end
-      if position > allocated_tasks_height
-        position - allocated_tasks_height
-      else
-        0
-      end
-    end
-
     def handle_key(key)
       handle_char_keypress(key)
     end
@@ -130,17 +107,17 @@ module Minder
       case key_event.ch
       when 'j'
         @collection.select_next_task
-        move_cursor
+        move_cursor(1)
       when 'k' then :select_previous_task
         @collection.select_previous_task
-        move_cursor
+        move_cursor(-1)
       when 'd' then :complete_task
       when 'x' then :delete_task
       when 's' then :start_task
       when 'u' then :unstart_task
       when 'G' then :select_last_task
         @collection.select_last_task
-        move_cursor
+        move_cursor(:last)
       when 'e'
         # @editing = true
         # @task_editor = TaskEditor.new(task_manager.selected_task, self)
@@ -159,7 +136,7 @@ module Minder
         if @keypress_memory == ['g', 'g']
           @keypress_memory = [] of Char
           @collection.select_first_task
-          move_cursor
+          move_cursor(:first)
         end
       when ' '
         # if minimized?
@@ -169,13 +146,10 @@ module Minder
       end
     end
 
-    def move_cursor
+    def move_cursor(change)
       @cursor_moved = true
-      @cursor_y = 3 + @collection.selected_task_index - scroll_offset
-      if @scroll_offset != scroll_offset
-        @changed = true
-        @scroll_offset = scroll_offset
-      end
+      @cursor_y = @scroller.cursor_y + 3
+      @changed = true
     end
   end
 end
