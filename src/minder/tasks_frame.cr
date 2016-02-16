@@ -19,6 +19,7 @@ module Minder
       @keypress_memory = [] of Char
       @scroller = TasksScroller.new(@collection, (self as TasksFrame))
       @cursor_y = @scroller.cursor_y + 3
+      @collection.add_observer(self)
     end
 
     def contents
@@ -40,18 +41,18 @@ module Minder
     end
 
     def task_rows
+      Minder.debug(@scroller.tasks)
       @scroller.tasks.map { |task| task_row(task) }
     end
 
     def task_row(task)
-      task = task as Hash(String, JSON::Type)
-      description = task["description"] as String
+      description = task.description
       description = description[0..(width - 8)]
       "-[ ] #{description}"
     end
 
     def empty_text
-      ["Add a task by tabbing to Quick add task below."]
+      ["Add a task by tabbing to Add task below."]
     end
 
     def minimize
@@ -86,20 +87,6 @@ module Minder
 
     def handle_key(key)
       handle_char_keypress(key)
-    end
-
-    def handle_task_editor_event(event, data = {} of Symbol => String)
-      if event == :stop_editing
-        @editing = false
-        @task_editor = nil
-      elsif event == :update_task
-        task_manager.update_task(task_manager.selected_task, data)
-        @editing = false
-        @task_editor = nil
-      end
-
-      changed
-      notify_observers(event)
     end
 
     def handle_char_keypress(key_event)
@@ -150,6 +137,10 @@ module Minder
       @cursor_moved = true
       @cursor_y = @scroller.cursor_y + 3
       @changed = true
+    end
+
+    def update(event_name, data)
+      @changed = true if event_name == "added"
     end
   end
 end

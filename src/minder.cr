@@ -2,6 +2,7 @@ require "logger"
 require "./observer"
 require "./observable"
 require "../libs/termbox"
+require "./termbox"
 
 module Minder
   alias Row = Array(Termbox::Cell)

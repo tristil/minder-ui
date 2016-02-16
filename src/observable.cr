@@ -10,7 +10,7 @@ module Observable(T)
     @observers.try &.delete(observer)
   end
 
-  def notify_observers(data)
-    @observers.try &.each &.update(data)
+  def notify_observers(event_name, data = nil)
+    @observers.try &.each &.update(event_name, data)
   end
 end

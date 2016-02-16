@@ -36,6 +36,23 @@ module Minder
       @frames.select(&.fixed?)
     end
 
+    def switch_focus
+      current_index = 0
+      frames.each_with_index do |frame, index|
+        if frame.focused?
+          current_index = index
+          break
+        end
+      end
+      focused_frame.unfocus
+      next_frame = frames[current_index + 1..-1].find { |frame| !frame.hidden? }
+      if next_frame
+        next_frame.focus
+      else
+        frames[0].focus
+      end
+    end
+
     def focus_frame(frame)
       @frames.each do |search_frame|
         if search_frame == frame
@@ -66,6 +83,7 @@ module Minder
       line = 0
       @frames.each do |frame|
         frame.pivot = Termbox::Position.new(0, line)
+        frame.top = line
         frame.width = window.width
         if frame.expands?
           frame.height = window.height - fixed_frames_height

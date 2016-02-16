@@ -29,11 +29,13 @@ module Minder
         collection: tasks_collection,
         display_mode: DisplayMode::Expands)
       scene << tasks_frame
-      quick_add_frame = QuickAddFrame.new(
+      add_task_frame = AddTaskFrame.new(
         window: window,
         height: 3,
-        width: window.width)
-      scene << quick_add_frame
+        width: window.width,
+        collection: tasks_collection
+      )
+      scene << add_task_frame
       # Reset things
       window.clear
 
@@ -46,11 +48,13 @@ module Minder
           if ev.type == Termbox::EVENT_KEY
             if [Termbox::KEY_CTRL_C, Termbox::KEY_CTRL_D].includes? ev.key
               exit
+            elsif ev.key == Termbox::KEY_TAB
+              scene.switch_focus
+            else
+              #Minder.debug("Focused frame: #{scene.focused_frame.class.name}")
+              scene.focused_frame.handle_key(ev)
+              #Minder.debug("fiber loop: scene changed? #{scene.changed?}")
             end
-
-            #Minder.debug("Focused frame: #{scene.focused_frame.class.name}")
-            scene.focused_frame.handle_key(ev)
-            #Minder.debug("fiber loop: scene changed? #{scene.changed?}")
           elsif ev.type == Termbox::EVENT_RESIZE
             scene.repaint_all
           end

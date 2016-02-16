@@ -17,8 +17,10 @@ module Minder
       @collection.tasks[visible_tasks_range]
     end
 
-    def update(change)
-      set_cursor_y(change)
+    def update(event_name, change)
+      if event_name == "changed"
+        set_cursor_y(change)
+      end
     end
 
     def set_cursor_y(change)

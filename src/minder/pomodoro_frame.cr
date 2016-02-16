@@ -2,6 +2,8 @@ require "./frame"
 
 module Minder
   class PomodoroFrame < Frame
+    @running = false
+
     def contents
       if running?
         running_message
@@ -21,7 +23,7 @@ module Minder
     end
 
     def running?
-      true
+      @running
     end
 
     def template

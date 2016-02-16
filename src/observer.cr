@@ -1,3 +1,3 @@
 abstract class Observer
-  abstract def update(collection)
+  abstract def update(event_name, data)
 end

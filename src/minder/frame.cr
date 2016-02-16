@@ -3,14 +3,14 @@ require "../libs/termbox"
 
 module Minder
   class Frame
-    property :focused
+    property :focused,
+             :top
 
     getter :window,
            :min_height,
            :height,
            :width,
            :left,
-           :top,
            :lines,
            :container,
            :buffer,
@@ -33,8 +33,8 @@ module Minder
                    @left = 0,
                    @display_mode = DisplayMode::Fixed,
                    @collection = TasksCollection.new)
-      @cursor_x = 1
-      @cursor_y = 1
+      @cursor_x = initial_cursor_x
+      @cursor_y = initial_cursor_y
       @focused = false
       @hidden = false
       @has_cursor = false
@@ -55,6 +55,18 @@ module Minder
 
       @lines = [] of String
       @min_height = height
+      after_initialize
+    end
+
+    def after_initialize
+    end
+
+    def initial_cursor_x
+      1
+    end
+
+    def initial_cursor_y
+      1
     end
 
     def handle_key(key)
@@ -105,6 +117,7 @@ module Minder
     end
 
     def position_cursor
+      Minder.debug("[#{self}] top: #{@top} x: #{@cursor_x} y: #{@cursor_y}")
       window.cursor(Termbox::Position.new(@cursor_x, @cursor_y + top))
     end
 

@@ -1,6 +1,6 @@
 module Minder
   class TasksCollection
-    include Observable(Observer)
+    include Observable(Observer|TasksFrame)
 
     delegate :size,
              "empty?", @tasks
@@ -8,7 +8,11 @@ module Minder
     getter :tasks,
            :selected_task_index
 
-    def initialize(@tasks = [] of Hash(String, JSON::Type))
+    @tasks = [] of Task
+
+    def initialize(tasks = [] of Hash(String, String))
+      tasks.each { |task| @tasks << Task.new(task) }
+
       @last_selected_task_index = @selected_task_index = 0
     end
 
@@ -33,7 +37,7 @@ module Minder
     def selected_task_index=(number)
       @last_selected_task_index = @selected_task_index
       @selected_task_index = number
-      notify_observers(@selected_task_index - @last_selected_task_index)
+      notify_observers("changed", @selected_task_index - @last_selected_task_index)
     end
 
     def first_task_selected?
@@ -48,10 +52,9 @@ module Minder
       selected_task_index == size - 1 - num
     end
 
-    def moving_forward?
-    end
-
-    def moving_backward?
+    def add_task(text)
+      @tasks << Task.new({"description" => text})
+      notify_observers("added", @selected_task_index - @last_selected_task_index)
     end
   end
 end
