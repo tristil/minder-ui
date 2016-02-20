@@ -21,10 +21,9 @@ module Minder
     delegate "pivot=", @container
     delegate "fixed?", "expands?", @display_mode
 
-    @cursor_x :: Int32
-    @cursor_y :: Int32
-
-    @container :: Termbox::Container
+    @cursor_x : Int32
+    @cursor_y : Int32
+    @container : Termbox::Container
 
     def initialize(@window = null,
                    @height = 3,
@@ -38,7 +37,6 @@ module Minder
       @focused = false
       @hidden = false
       @has_cursor = false
-      @changed :: Bool
       @changed = true
       @cursor_moved = true
 

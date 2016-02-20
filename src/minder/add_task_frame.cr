@@ -21,7 +21,7 @@ module Minder
       @text_editor.add_observer(self)
     end
 
-    def update(event_name, text)
+    def update(event_name, text : String)
       @changed = true
       @cursor_x = @text_editor.cursor_x + INTRO_TEXT.size + 1
       if event_name == "submitted"

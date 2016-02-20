@@ -1,6 +1,7 @@
 module Minder
   class TextEditor
     include Observable(AddTaskFrame)
+
     getter :cursor_x
 
     @cursor_x = 0

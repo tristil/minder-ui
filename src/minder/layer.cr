@@ -7,7 +7,7 @@ module Minder
            :grid,
            :element
 
-    @grid :: Grid
+    @grid : Grid
 
     def self.build_from_element(element)
       layer = new(element.width, element.height, element.pivot)

@@ -1,6 +1,6 @@
 module Minder
   class TasksCollection
-    include Observable(Observer|TasksFrame)
+    include Observable(Observer)
 
     delegate :size,
              "empty?", @tasks
@@ -54,7 +54,7 @@ module Minder
 
     def add_task(text)
       @tasks << Task.new({"description" => text})
-      notify_observers("added", @selected_task_index - @last_selected_task_index)
+      notify_observers("added", text)
     end
   end
 end

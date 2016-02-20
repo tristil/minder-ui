@@ -2,6 +2,8 @@ require "./frame"
 
 module Minder
   class TasksFrame < Frame
+    include Observer
+
     getter :selected_row,
            :task_editor
 

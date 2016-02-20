@@ -1,5 +1,7 @@
 module Minder
-  class TasksScroller < Observer
+  class TasksScroller
+    include Observer
+
     getter :cursor_y,
            :scroll_offset
 
@@ -17,7 +19,7 @@ module Minder
       @collection.tasks[visible_tasks_range]
     end
 
-    def update(event_name, change)
+    def update(event_name, change : Int32)
       if event_name == "changed"
         set_cursor_y(change)
       end

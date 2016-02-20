@@ -3,16 +3,20 @@ require "json"
 
 module Minder
   class Application
+    include Observer
+
     getter :logger
+
+    def initialize
+      @client = Client.new
+    end
 
     def run
       Minder.debug "Start"
 
-      socket = UNIXSocket.new(SOCKET_LOCATION)
-      socket.puts("tasks\n")
-      data = socket.gets("END\n").to_s.gsub("END\n", "")
-      data = JSON.parse(data)
-      tasks_collection = TasksCollection.new(data.as_a)
+      tasks_json = @client.tasks
+      tasks_collection = TasksCollection.new(tasks_json)
+      tasks_collection.add_observer(self)
 
       window = Termbox::Window.new
       scene = Scene.new(window)
@@ -20,6 +24,7 @@ module Minder
         window: window,
         height: 5,
         top: 0,
+        collection: tasks_collection,
         width: window.width)
       scene << pomodoro_frame
       tasks_frame = TasksFrame.new(
@@ -70,10 +75,16 @@ module Minder
 
       at_exit do
         window.clear
-        socket.close
+        @client.disconnect
         window.shutdown
         puts "Shutdown"
       end
+    end
+
+    def update(event_name, data)
+      return unless event_name == "added"
+
+      @client.add_task(data)
     end
   end
 end

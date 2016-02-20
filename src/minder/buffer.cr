@@ -10,7 +10,7 @@ module Minder
 
     getter :layers
 
-    @frame :: Frame
+    @frame : Frame
 
     def initialize(@width, @height, @pivot, @frame : Frame)
       @layers = [] of Layer
